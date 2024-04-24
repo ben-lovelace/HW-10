@@ -1,0 +1,117 @@
+---
+title: "Homework 10"
+author: "Ben Lovelace"
+date: "BRL979"
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.height=3, fig.width=4, warning=FALSE, tidy=TRUE, tidy.opts=list(width.cutoff=60))
+```
+
+```{r include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(mosaic)
+library(MatchIt)
+library(moderndive)
+library(effectsize)
+library(kableExtra)
+```
+
+[Github Link]()
+
+------------------------------------------------------------------------
+
+# **Question 1:**
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+redline = read.csv("redlining.csv")
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+rl_lm = lm(policies ~ minority + fire + age + income, data = redline)
+round(coef(rl_lm),3)
+
+get_regression_table(rl_lm)
+```
+
+1.The question being addressed here is essentially whether or not there is redlining in the insurance industry in the city of Chicago, measured via government issued insurance policies. 
+
+2.In order to answer the question I used a linear regression model, adjusting for the fire, age, and income variables. 
+
+3.I found that the coefficient for the minority variable of my linear model was around .008, with a confidence interval of .003 to .014.
+
+4.The coefficient demonstrates that for every 1 percent increase in the percentage of inhabitants that self-identify as minorities, there is a .008 increase in the number of policies issued. Although the coefficient of .008 seems very small, and therefore insignificant, the number of policies issued per 100 houses is also, generally, a small number. As such, it can be concluded that there is a significant, positive association between racial/ethnic composition of a ZIP code and FAIR policies issued. This means that there was likely racist redlining occuring in Chicago at the time the data was collected.
+
+
+
+
+# **Question 2:**
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+grocery = read.csv("groceries.csv")
+```
+
+### **Part A:**
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+grocery_sum = grocery %>%
+  group_by(Store) %>%
+  summarize(price_mean = mean(Price))
+
+ggplot(grocery_sum,aes(x=Store,y=price_mean)) +
+  geom_bar(color = 'deeppink3',fill='deeppink', stat = 'identity') + coord_flip() + xlab("Overall mean of Prices") + ggtitle("Means of Overall Prices of Texas Grocery Stores")
+```
+
+### **Part B:**
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+product_sum = grocery %>%
+  group_by(Product) %>%
+  mutate(c = 1) %>%
+  summarize(stores_selling = sum(c))
+
+ggplot(product_sum,aes(x=Product,y=stores_selling)) + 
+  geom_bar(color = "lightskyblue", fill = 'lightskyblue1', stat = 'identity') + coord_flip() + xlab("Number of Stores Selling") + ggtitle("Products by Number of Grocery Stores Selling") + theme(axis.text.y = element_text(size = 5))
+```
+
+### **Part C:**
+```{r message=FALSE, warning=FALSE, include=FALSE}
+grocery_lm = lm(Price ~ Type + Product, data = grocery)
+round(coef(grocery_lm),2)
+
+get_regression_table(grocery_lm)
+```
+
+Compared with ordinary grocery stores (like Albertsons, HEB, or Krogers), convenience stores charge somewhere between
+.92 and .41 dollars more for the same product. 
+
+### **Part D:**
+```{r message=FALSE, warning=FALSE, include=FALSE}
+grocery_lm2 = lm(Price ~ Store + Product, data = grocery)
+coef(grocery_lm2)
+
+get_regression_table(grocery_lm2)
+```
+
+The stores that charge the lowest when comparing the same items are Walmart and Kroger Fresh Fare. Meanwhile, The stores that charge the most when comparing the same products are Wheatsville Food Co-Op and Whole Foods. 
+
+### **Part E:**
+Compared to the intercept, HEB charges about 64 cents less than the intercept, while Central Market charges about 57 cents less. Thus, between the two, there is around a 7 cent difference in prices for the same products, a noticeable difference. However, when compared to differences among other stores, such as the around 1 dollar difference between Whole Foods and Fiesta, the difference is quite small.
+
+### **Part F:**
+```{r message=FALSE, warning=FALSE, include=FALSE}
+grocery_inc = grocery %>%
+  mutate(Income10k = Income/10000)
+
+grocery_lm3 = lm(Price ~ Income10k + Product, data = grocery_inc)
+round(coef(grocery_lm3),2)
+
+standardize_parameters(grocery_lm3)
+```
+
+The sign of the Income10K coefficient is negative, so on average, consumers in poorer ZIP codes actually seem to pay more for the same product. The Income10K coefficient being -.01 means that for every 10000 income increase, average prices decrease by about .01.
+
+A one-standard deviation oncrease in the income of a ZIP code seems to be associated with a .03 standard-deviation change in the price that consumers in that ZIP code expect to pay for the same product.
